@@ -1,0 +1,86 @@
+# Test Documentation for Should I Ride App
+
+Last Updated: [Current Date]
+
+## Unit Tests (/src/test/)
+
+### WeatherRepositoryTest
+- whenRainProbabilityIsHigh_conditionsAreCritical
+  Description: Verifies that high rain probability (>70%) triggers critical conditions flag
+  Location: WeatherRepositoryTest.kt
+
+- whenWindSpeedIsHigh_conditionsAreCritical
+  Description: Verifies that high wind speeds (>15 m/s) trigger critical conditions flag
+  Location: WeatherRepositoryTest.kt
+
+- whenTemperatureIsExtreme_conditionsAreCritical
+  Description: Verifies that extreme temperatures (>40°C or <-5°C) trigger critical conditions flag
+  Location: WeatherRepositoryTest.kt
+
+- whenConditionsAreIdeal_bikeScoreIsHigh
+  Description: Verifies that ideal weather conditions result in a high bike score (>=80)
+  Location: WeatherRepositoryTest.kt
+
+- verifyDateFormatting
+  Description: Verifies correct formatting of forecast dates into day names
+  Location: WeatherRepositoryTest.kt
+
+### WeatherViewModelTest
+- whenApiCallSucceeds_forecastsAreShown
+  Description: Verifies weather forecasts are properly displayed after successful API call
+  Location: WeatherViewModelTest.kt
+
+## Instrumentation Tests (/src/androidTest/)
+
+### WeatherIntegrationTest
+- verifyCompleteWeatherForecastFlow
+  Description: Tests the complete flow from location to weather display
+  Verifies:
+  - City name retrieval
+  - Forecast data validity
+  - Workday-only forecasts
+  - Bike score calculations (0-100)
+  - Critical conditions flag
+  Location: WeatherIntegrationTest.kt
+
+### WeatherScreenTest
+- whenWeatherIsDangerous_warningIsShown
+  Description: Verifies warning display for dangerous weather conditions
+  Location: WeatherScreenTest.kt
+
+- whenWeatherIsGood_noWarningIsShown
+  Description: Verifies no warnings shown for good weather conditions
+  Location: WeatherScreenTest.kt
+
+## Test Coverage Summary
+
+Current test coverage focuses on:
+- Weather condition calculations
+- Basic UI display logic
+- Core integration flows
+- Critical safety warnings
+
+## Areas Needing Coverage
+
+1. Location Services
+- Permission handling
+- Location updates
+- Error scenarios
+
+2. Error Handling
+- Network errors
+- API errors
+- Location errors
+
+3. UI Components
+- Different screen sizes
+- Theme changes
+- Accessibility
+
+4. Performance
+- Load times
+- Memory usage
+- Battery impact
+
+---
+Note: This document should be updated whenever new tests are added or existing tests are modified. 
