@@ -19,7 +19,7 @@ import me.vosaa.shouldiride.ui.theme.BadWeatherColor
 import me.vosaa.shouldiride.ui.theme.getBikeScoreColor
 
 @Composable
-private fun BikeScoreIndicator(score: Int, hasCriticalConditions: Boolean) {
+fun BikeScoreIndicator(score: Int, hasCriticalConditions: Boolean) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
