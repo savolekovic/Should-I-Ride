@@ -11,35 +11,54 @@ import kotlinx.coroutines.launch
 import me.vosaa.bestbikeday.domain.repository.WeatherRepository
 import me.vosaa.bestbikeday.domain.model.WeatherForecast
 import javax.inject.Inject
+import me.vosaa.bestbikeday.data.location.LocationService
 
 
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
-    private val repository: WeatherRepository
+    private val repository: WeatherRepository,
+    private val locationService: LocationService
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(WeatherUiState())
     val uiState: StateFlow<WeatherUiState> = _uiState.asStateFlow()
 
     init {
-        fetchWeatherData()
+        checkLocationAndFetchData()
     }
 
-
-    private fun fetchWeatherData() {
+    private fun checkLocationAndFetchData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                // Using Podgorica coordinates
-                val forecasts = repository.getWeatherForecast(
-                    lat = 42.4518639,
-                    lon = 19.2700494
-                )
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        forecasts = forecasts,
-                        location = "Podgorica"
-                    )
+                if (locationService.hasLocationPermission()) {
+                    val location = locationService.getCurrentLocation()
+                    if (location != null) {
+                        val forecasts = repository.getWeatherForecast(
+                            lat = location.latitude,
+                            lon = location.longitude
+                        )
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                forecasts = forecasts,
+                                location = "Current Location"
+                            )
+                        }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = "Unable to get location"
+                            )
+                        }
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = "Location permission required"
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -50,6 +69,10 @@ class WeatherViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun refreshWeatherData() {
+        checkLocationAndFetchData()
     }
 }
 
