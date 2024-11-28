@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -35,7 +34,7 @@ class LocationService @Inject constructor(
     }
 
     @SuppressLint("MissingPermission")
-    suspend fun getCurrentLocation(): Location? {
+    suspend fun getCurrentLocation(): LocationData? {
         if (!hasLocationPermission()) {
             return null
         }
@@ -44,14 +43,18 @@ class LocationService @Inject constructor(
             locationClient.lastLocation.apply {
                 if (isComplete) {
                     if (isSuccessful) {
-                        cont.resume(result)
+                        result?.let {
+                            cont.resume(LocationData(it.latitude, it.longitude))
+                        } ?: cont.resume(null)
                     } else {
                         cont.resume(null)
                     }
                     return@suspendCancellableCoroutine
                 }
                 addOnSuccessListener {
-                    cont.resume(it)
+                    it?.let {
+                        cont.resume(LocationData(it.latitude, it.longitude))
+                    } ?: cont.resume(null)
                 }
                 addOnFailureListener {
                     cont.resume(null)
@@ -62,4 +65,9 @@ class LocationService @Inject constructor(
             }
         }
     }
-} 
+}
+
+data class LocationData(
+    val latitude: Double,
+    val longitude: Double
+) 

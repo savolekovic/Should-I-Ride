@@ -17,7 +17,7 @@ class WeatherRepositoryImpl @Inject constructor(
     private val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
     private val apiKey = "63816ac463b32cf49aad527b75298a20"
 
-    override suspend fun getWeatherForecast(lat: Double, lon: Double): List<WeatherForecast> {
+    override suspend fun getWeatherForecast(lat: Double, lon: Double): Pair<String, List<WeatherForecast>> {
         return try {
             val response = apiService.getWeatherForecast(lat, lon, apiKey = apiKey)
             val currentTime = Calendar.getInstance()
@@ -52,7 +52,7 @@ class WeatherRepositoryImpl @Inject constructor(
                         bikeScore = calculateRideRating(forecast)
                     )
                 }
-            list
+            Pair(response.city.name, list)
         } catch (e: Exception) {
             throw e
         }

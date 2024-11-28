@@ -31,17 +31,17 @@ class WeatherViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 if (locationService.hasLocationPermission()) {
-                    val location = locationService.getCurrentLocation()
-                    if (location != null) {
-                        val forecasts = repository.getWeatherForecast(
-                            lat = location.latitude,
-                            lon = location.longitude
+                    val locationData = locationService.getCurrentLocation()
+                    if (locationData != null) {
+                        val (cityName, forecasts) = repository.getWeatherForecast(
+                            lat = locationData.latitude,
+                            lon = locationData.longitude
                         )
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
                                 forecasts = forecasts,
-                                location = "Current Location"
+                                location = cityName
                             )
                         }
                     } else {
