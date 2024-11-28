@@ -47,7 +47,7 @@ class WeatherRepositoryImpl @Inject constructor(
                         forecastDate.get(Calendar.DAY_OF_YEAR) == currentTime.get(Calendar.DAY_OF_YEAR) &&
                                 forecastDate.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR)
 
-                    val weatherScore = calculateBikeRating(forecast)
+                    val weatherScore = calculateRideRating(forecast)
                     
                     WeatherForecast(
                         date = if (isToday) "Today" else dayFormat.format(Date(forecast.dt * 1000)),
@@ -65,7 +65,7 @@ class WeatherRepositoryImpl @Inject constructor(
         }
     }
 
-    fun calculateBikeRating(forecast: ForecastItem): WeatherScoreResult {
+    fun calculateRideRating(forecast: ForecastItem): WeatherScoreResult {
         // Rain probability scoring (0-40 points)
         val rainScore = when (forecast.pop) {
             in 0.0..0.15 -> 40
