@@ -9,17 +9,17 @@ plugins {
 }
 
 android {
-    namespace = "me.vosaa.bestbikeday"
+    namespace = "me.vosaa.shouldiride"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "me.vosaa.bestbikeday"
+        applicationId = "me.vosaa.shouldiride"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "me.vosaa.shouldiride.CustomTestRunner"
     }
 
     buildTypes {
@@ -74,4 +74,20 @@ dependencies {
 
     //Location services
     implementation(libs.play.services.location)
+
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-core:5.3.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // Android Testing
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
+
+    // Hilt Testing
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
+    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.48")
 }
