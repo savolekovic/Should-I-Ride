@@ -41,16 +41,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-    tasks.withType<Test> {
-        reports {
-            junitXml.required.set(true)
-            html.required.set(true)
-
-            junitXml.outputLocation.set(file("${layout.buildDirectory}/test-results/testDebugUnitTest"))
-            html.outputLocation.set(file("${layout.buildDirectory}/reports/tests/testDebugUnitTest"))
-        }
-    }
 }
 
 dependencies {
