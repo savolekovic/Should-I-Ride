@@ -27,7 +27,7 @@ jobs:
 
       # Step 2: Set up JDK 11
       # Most Android builds require Java, so this step sets up the required JDK version.
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'  # Use Zulu distribution of Java
@@ -44,14 +44,10 @@ jobs:
             gradle-${{ runner.os }}-
 
       # Step 4: Set up Android SDK
-      # This step installs the Android SDK necessary for building the Android app.
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 31       # Specify the Android API level
-          build-tools: 31.0.0 # Specify the build-tools version
-          target: default     # Target the default emulator image
-          ndk: false          # Disable NDK (Native Development Kit) unless required
+          cmdline-tools-version: 16.0 # Match the version indicated in the error
 
       # Step 5: Build the Android app
       # Runs the Gradle build task to compile your Android app.
