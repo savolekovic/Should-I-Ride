@@ -72,11 +72,15 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: app/build/test-results/testDebugUnitTest/ # Adjust the path if necessary
-          
-      # Step 11: Display the test results in GitHub UI (JUnit format)
+          path: app/build/test-results/testDebugUnitTest/*.xml  # Adjust the path if necessary
+
+      # Step 11: Display the test results (JUnit format)
       - name: Display test results
         if: always()
         run: |
           echo "Test Results"
-          cat app/build/test-results/testDebugUnitTest/test-*.xml # Adjust path if necessary
+          if [ -d "app/build/test-results/testDebugUnitTest" ]; then
+            cat app/build/test-results/testDebugUnitTest/test-*.xml || echo "No test results found"
+          else
+            echo "No test results directory found"
+          fi
