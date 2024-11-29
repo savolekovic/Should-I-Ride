@@ -1,60 +1,66 @@
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
-  # Allows you to manually trigger this workflow from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner provided by GitHub Actions
+    runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Step 1: Check out the repository
-      # This action checks out your repository code so that it can be accessed during the workflow.
       - name: Check out the code
         uses: actions/checkout@v4
 
-      # Step 2: Set up JDK 11
-      # Most Android builds require Java, so this step sets up the required JDK version.
+      # Step 2: Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'  # Use Zulu distribution of Java
-          java-version: '11'    # Specify the Java version
+          distribution: 'zulu'
+          java-version: '17'
 
       # Step 3: Cache Gradle dependencies
-      # Caches Gradle dependencies to speed up subsequent builds.
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.gradle/caches # Directory to cache
+          path: ~/.gradle/caches
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      # Step 4: Set up Android SDK
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 16.0 # Match the version indicated in the error
+      # Step 4: Install Android Command-Line Tools Manually
+      # Download and set up the latest command-line tools manually
+      - name: Install Android Command-Line Tools
+        run: |
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          curl -sSL "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip" -o cmdline-tools.zip
+          unzip -q cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools
+          mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+          rm cmdline-tools.zip
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
 
-      # Step 5: Build the Android app
-      # Runs the Gradle build task to compile your Android app.
+      # Step 5: Accept Android SDK Licenses
+      - name: Accept Android SDK Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+
+      # Step 6: Install Required SDK Packages
+      - name: Install SDK Packages
+        run: |
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-31"
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+
+      # Step 7: Build the app
       - name: Build the app
         run: ./gradlew assembleDebug
 
-      # Step 6: Run tests
-      # Executes unit tests and instrumented tests defined in your Android project.
+      # Step 8: Run unit tests
       - name: Run unit tests
         run: ./gradlew test
