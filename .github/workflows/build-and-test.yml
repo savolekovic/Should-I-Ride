@@ -67,6 +67,12 @@ jobs:
       - name: Run unit tests
         run: ./gradlew test
 
+        # Step 9.1: List files in the test results directory (for diagnostics)
+      - name: List files in test results directory
+        run: |
+          echo "Listing files in the test results directory"
+          ls -R app/build/test-results || echo "No test results directory found"
+
       # Step 10: Upload test results as artifacts
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
