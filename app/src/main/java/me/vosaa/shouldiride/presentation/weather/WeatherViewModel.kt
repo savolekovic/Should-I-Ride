@@ -4,14 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import me.vosaa.shouldiride.domain.repository.WeatherRepository
-import me.vosaa.shouldiride.domain.model.WeatherForecast
-import javax.inject.Inject
 import me.vosaa.shouldiride.data.location.LocationService
+import me.vosaa.shouldiride.domain.model.WeatherForecast
+import me.vosaa.shouldiride.domain.repository.WeatherRepository
+import javax.inject.Inject
 
 
 @HiltViewModel
@@ -20,15 +21,16 @@ class WeatherViewModel @Inject constructor(
     private val locationService: LocationService
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(WeatherUiState())
-    val uiState: StateFlow<WeatherUiState> = _uiState.asStateFlow()
-
-    init {
-        checkLocationAndFetchData()
-    }
+    val uiState = _uiState
+        .onStart { checkLocationAndFetchData() }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            WeatherUiState()
+        )
 
     private fun checkLocationAndFetchData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
             try {
                 if (locationService.hasLocationPermission()) {
                     val locationData = locationService.getCurrentLocation()
@@ -77,7 +79,7 @@ class WeatherViewModel @Inject constructor(
 }
 
 data class WeatherUiState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val forecasts: List<WeatherForecast> = emptyList(),
     val error: String? = null,
     val location: String = ""
