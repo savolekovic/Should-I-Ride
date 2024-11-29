@@ -1,8 +1,9 @@
 name: CI
 
 on:
-  pull_request:
-    branches: [ "master" ]
+  push:
+    branches:
+      - master  # Triggered when a PR is merged into master
   workflow_dispatch:
 
 jobs:
@@ -10,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the repository
+      # Step 1: Check out the code
       - name: Check out the code
         uses: actions/checkout@v4
 
@@ -55,38 +56,13 @@ jobs:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
       # Step 7: Grant Executable Permissions to Gradlew
-      # Fixes the "Permission denied" error for the Gradlew script
       - name: Make Gradlew executable
         run: chmod +x ./gradlew
 
-      # Step 8: Build the app
-      - name: Build the app
-        run: ./gradlew assembleDebug
+      # Step 8: Build APK Release (final APK for production)
+      - name: Build APK Release
+        run: ./gradlew assembleRelease
 
-      # Step 9: Run unit tests
-      - name: Run unit tests
-        run: ./gradlew test --info
-
-        # Step 9.1: List files in the test results directory (for diagnostics)
-      - name: List files in test results directory
-        run: |
-          echo "Listing files in the test results directory"
-          ls -R app/build/test-results || echo "No test results directory found"
-
-      # Step 10: Upload test results as artifacts
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: app/build/test-results/testDebugUnitTest/*.xml  # Adjust the path if necessary
-
-      # Step 11: Display the test results (JUnit format)
-      - name: Display test results
-        if: always()
-        run: |
-          echo "Test Results"
-          if [ -d "app/build/test-results/testDebugUnitTest" ]; then
-            cat app/build/test-results/testDebugUnitTest/test-*.xml || echo "No test results found"
-          else
-            echo "No test results directory found"
-          fi
+      # Optional: Run Unit Tests
+      - name: Run Unit Tests
+        run: ./gradlew test
