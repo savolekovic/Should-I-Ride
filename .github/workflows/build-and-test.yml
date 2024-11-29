@@ -68,3 +68,17 @@ jobs:
       # Step 9: Run unit tests
       - name: Run unit tests
         run: ./gradlew test
+
+      # Step 10: Upload test results as artifacts
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: app/build/test-results/testDebugUnitTest/ # Adjust the path if necessary
+          
+      # Step 11: Display the test results in GitHub UI (JUnit format)
+      - name: Display test results
+        if: always()
+        run: |
+          echo "Test Results"
+          cat app/build/test-results/testDebugUnitTest/test-*.xml # Adjust path if necessary
