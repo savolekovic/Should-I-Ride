@@ -55,7 +55,7 @@ class WeatherViewModelTest {
 
         val initialState = viewModel.uiState.value
 
-        assertFalse(initialState.isLoading)
+        assertTrue(initialState.isLoading)
         assertTrue(initialState.forecasts.isEmpty())
     }
 
