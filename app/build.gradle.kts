@@ -41,6 +41,13 @@ android {
     buildFeatures {
         compose = true
     }
+
+    tasks.withType<Test> {
+        reports {
+            junitXml.required.set(true)
+            html.required.set(true)
+        }
+    }
 }
 
 dependencies {
