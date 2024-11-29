@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.vosaa.shouldiride.presentation.weather.components.ErrorContent
 import me.vosaa.shouldiride.presentation.weather.components.LoadingIndicator
 import me.vosaa.shouldiride.presentation.weather.components.WeatherContent
@@ -24,7 +24,7 @@ fun WeatherScreen(
     viewModel: WeatherViewModel,
     modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     
     val launcher = rememberLauncherForActivityResult(
