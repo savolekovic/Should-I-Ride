@@ -61,7 +61,7 @@ jobs:
 
       # Step 8: Build APK Release (final APK for production)
       - name: Build APK Release
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleRelease
 
       # Step 9: Run Unit Tests
       - name: Run Unit Tests
