@@ -2,7 +2,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import me.vosaa.shouldiride.domain.model.WeatherForecast
-import me.vosaa.shouldiride.presentation.weather.WeatherCard
+import me.vosaa.shouldiride.presentation.weather.components.WeatherCard
 import org.junit.Rule
 import org.junit.Test
 
