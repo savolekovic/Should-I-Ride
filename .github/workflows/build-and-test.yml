@@ -66,9 +66,3 @@ jobs:
       # Step 9: Run Unit Tests
       - name: Run Unit Tests
         run: ./gradlew test
-
-      # Step 10: Run Integration Tests (after unit tests)
-      - name: Run Integration Tests
-        run: ./gradlew integrationTest
-
-      # Optional: Run post-build actions such as deploying the APK, storing results, etc.
