@@ -319,9 +319,6 @@ class WeatherRepositoryTest {
 
             val result = (repository as WeatherRepositoryImpl).calculateRideRating(forecast)
 
-            println("Expected : ${testCase.expectedScore}, critical: ${testCase.shouldBeCritical}")
-            println("Result: ${result.score}, critical: ${result.hasCriticalConditions}")
-
             assertTrue(
                 "Rain probability ${testCase.rainProbability * 100}% (${testCase.description}): " +
                         "Score ${result.score} should be close to ${testCase.expectedScore}",
