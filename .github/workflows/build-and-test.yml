@@ -33,7 +33,6 @@ jobs:
             gradle-${{ runner.os }}-
 
       # Step 4: Install Android Command-Line Tools Manually
-      # Download and set up the latest command-line tools manually
       - name: Install Android Command-Line Tools
         run: |
           mkdir -p $ANDROID_HOME/cmdline-tools
@@ -50,17 +49,22 @@ jobs:
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
-      # Step 6: Install Required SDK Packages
+      # Step 6: Install SDK Packages
       - name: Install SDK Packages
         run: |
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-31"
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
-      # Step 7: Build the app
+      # Step 7: Grant Executable Permissions to Gradlew
+      # Fixes the "Permission denied" error for the Gradlew script
+      - name: Make Gradlew executable
+        run: chmod +x ./gradlew
+
+      # Step 8: Build the app
       - name: Build the app
         run: ./gradlew assembleDebug
 
-      # Step 8: Run unit tests
+      # Step 9: Run unit tests
       - name: Run unit tests
         run: ./gradlew test
