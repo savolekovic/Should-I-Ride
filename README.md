@@ -24,6 +24,8 @@ A modern Android application that helps riders decide if it's a good day for a t
 - **MVVM** - Presentation pattern
 - **Material 3** - Design system
 
+For detailed API and component docs, see [API and Components Documentation](docs/API.md).
+
 ## Architecture 🏗
 
 The project follows Clean Architecture principles with three main layers:
