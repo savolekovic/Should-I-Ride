@@ -2,10 +2,8 @@ package me.vosaa.shouldiride.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.doublePreferencesKey
-import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -33,13 +31,20 @@ import java.util.Locale
 
 /**
  * Glance AppWidget showing the next ride period score and key weather data.
+ *
+ * - Uses PreferencesGlanceStateDefinition so widget UI can read state via currentState<Preferences>().
+ * - The ViewModel writes state using WidgetUpdater (below) and triggers per-id updates.
  */
 class RideWidget : GlanceAppWidget() {
-    override val sizeMode: SizeMode = SizeMode.Responsive(setOf())
+    // Single-size mode keeps layout simple and avoids providing explicit size buckets
+    override val sizeMode: SizeMode = SizeMode.Single
+
+    // Tell Glance to back this widget with Preferences state for simple key/value storage
     override val stateDefinition = PreferencesGlanceStateDefinition
 
     @Composable
     override fun Content() {
+        // Read the latest persisted widget state for this specific widget instance
         val prefs = currentState<Preferences>()
         val state = WidgetState.fromPreferences(prefs)
 
@@ -61,7 +66,7 @@ class RideWidget : GlanceAppWidget() {
     }
 }
 
-/** Receiver for the Ride widget. */
+/** Receiver for the Ride widget using the modern glanceAppWidget property. */
 class RideWidgetProvider : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = RideWidget()
 }
@@ -78,6 +83,9 @@ private object WidgetPrefs {
     val timestamp = longPreferencesKey("ts")
 }
 
+/**
+ * Value object mapped from Preferences to keep layout logic simple and decoupled from storage.
+ */
 private data class WidgetState(
     val title: String,
     val subtitle: String,
@@ -102,6 +110,10 @@ private data class WidgetState(
 
 /**
  * Bridge called by the ViewModel to push latest period forecast into the widget state.
+ *
+ * This updates each active widget instance by:
+ * 1) Writing its Preferences state via updateAppWidgetState(context, glanceId)
+ * 2) Requesting a recompose/update for that specific glanceId
  */
 object WidgetUpdater {
     suspend fun updateWithForecasts(
@@ -131,6 +143,7 @@ object WidgetUpdater {
                     prefs[WidgetPrefs.period] = next.period.name
                     prefs[WidgetPrefs.timestamp] = next.timestamp
                 }
+                // Request render for this widget id
                 RideWidget().update(context, glanceId)
             }
         }
