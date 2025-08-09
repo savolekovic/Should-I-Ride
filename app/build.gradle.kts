@@ -20,6 +20,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "me.vosaa.shouldiride.CustomTestRunner"
+
+        // Inject OpenWeather API key from local.properties into BuildConfig
+        val apiKey = (project.findProperty("OPEN_WEATHER_API_KEY") as? String) ?: ""
+        buildConfigField("String", "OPEN_WEATHER_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -40,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -50,6 +55,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
+    implementation(libs.androidx.foundation)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
@@ -66,6 +72,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.lifecycle.viewmodel.compose)
 
+    // Glance App Widget + Material3
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+
+    // Datastore for widget state
+    implementation(libs.androidx.datastore.preferences)
 
     //Hilt
     implementation(libs.hilt.android)

@@ -84,3 +84,27 @@ Current test coverage focuses on:
 
 ---
 Note: This document should be updated whenever new tests are added or existing tests are modified. 
+
+Manual test plan for new features:
+
+1) Hourly Forecast View
+- Launch app, grant location. Verify tabs: Morning, Midday, Evening.
+- Switch tabs; list updates to corresponding time-of-day entries.
+- Verify each card shows the correct time label (07:00, 12:00, 18:00), conditions, and Ride Score.
+- Edge: If only some periods have data, tabs still render and selecting an empty period shows no items.
+
+2) Ride Score correctness (spot-check)
+- For a given day, compare wind/rain/temp with the score band colors.
+- Ensure critical conditions show a warning line on the card.
+
+3) Widget
+- Add the widget to home screen.
+- Trigger in-app refresh (pull-to-refresh if implemented or re-open app); widget should update shortly with next period info.
+- Resize widget between small/medium: layout remains readable.
+
+4) Accessibility
+- Tabs and key text have content descriptions and sufficient contrast via Material 3.
+
+Automated tests
+- Run unit tests: `./gradlew testDebugUnitTest` (requires Android SDK locally)
+- New tests: `WeatherRepositoryPeriodTest` verifies grouping by RidePeriod. 

@@ -5,41 +5,63 @@ The app follows a simplified Clean Architecture with MVVM on the presentation la
 ## Layered Overview
 
 ```
-+------------------+        +---------------------+
-|     Presentation |        | Dependency Injection|
-|------------------|        |---------------------|
-| Jetpack Compose  |<------>| Hilt Modules        |
-| WeatherViewModel |        | (Network, Location) |
-+--------^---------+        +----------^----------+
++------------------+        +---------------------+         +------------------+
+|   Presentation   |        | Dependency Injection|         |      Widget      |
+|------------------|        |---------------------|         |------------------|
+| Jetpack Compose  |<------>| Hilt Modules        |   --->  | Glance AppWidget |
+| WeatherViewModel |        | (Network, Location) |         | RideWidget       |
++--------^---------+        +----------^----------+         +------------------+
          |                               |
-         | State (Flow)                  |
+         | State (Flow)                  | provides
          v                               |
 +------------------+        +---------- | --------+
-|       Domain     |<-------------------+          
+|      Domain      |<-------------------+          
 |------------------|                                  
 | WeatherRepository| (interface)                       
 | WeatherForecast  | (model)                           
-+--------^---------+                                   
-         |                                             
-         | Implementation                              
-         v                                             
-+------------------------------+                       
-|            Data              |                       
-|------------------------------|                       
-| Retrofit WeatherApiService   |--> OpenWeather        
-| DTOs (OpenWeatherResponse)   |                       
-| WeatherRepositoryImpl        |                       
-+------------------------------+                       
+| RidePeriod       | (enum)                            
++--------^---------+                                    
+         |                                              
+         | Implementation                               
+         v                                              
++------------------------------+                        
+|            Data              |                        
+|------------------------------|                        
+| Retrofit WeatherApiService   |--> OpenWeather         
+| DTOs (OpenWeatherResponse)   |                        
+| WeatherRepositoryImpl        |                        
++------------------------------+                        
 ```
 
-## Data Flow
+## Data Flow (Hourly Periods)
 
-1. UI composes `WeatherScreen` which collects state from `WeatherViewModel`.
-2. `WeatherViewModel` checks permissions via `LocationService` and fetches device location.
-3. `WeatherViewModel` calls `WeatherRepository.getWeatherForecast(lat, lon)`.
-4. `WeatherRepositoryImpl` requests the 5‑day/3‑hour forecast and filters to weekdays at 07:00 for the current week.
-5. Repository maps DTOs to domain `WeatherForecast`, computes a Ride Score, and returns the city name with the list.
-6. UI renders a list of cards, including warnings when conditions are critical.
+```
+[Device time]
+  └─> WeatherViewModel suggests next RidePeriod via nextPeriodFor(hour)
+       └─> Periods = [07, 12, 18]
+
+WeatherViewModel
+  └─> WeatherRepository.getWeatherForecastsByPeriod(lat, lon, Periods)
+       ├─> WeatherApiService.forecast
+       ├─> Filter: weekday && weekOfYear && hour ∈ Periods
+       ├─> Group: Map<RidePeriod, List<ForecastItem>>
+       └─> Map: List<WeatherForecast> (adds period, timestamp, score)
+
+UI
+  ├─> TabRow(Morning | Midday | Evening)
+  └─> LazyColumn for selected period
+```
+
+### Widget Update Flow
+
+```
+WeatherViewModel (after fetch)
+  -> WidgetUpdater.updateWithForecasts(map, city, context)
+     -> Choose next RidePeriod based on current time
+     -> Persist selected item in DataStore
+     -> Glance RideWidget.updateAll()
+Home Screen -> RideWidget reads state -> renders title, subtitle, score, temp, wind, rain
+```
 
 ## Ride Score
 
@@ -55,6 +77,5 @@ The app follows a simplified Clean Architecture with MVVM on the presentation la
 
 ## Notes
 
-- API key is currently read from `WeatherRepositoryImpl`.
-  - TODO: Clarify functionality and move to secure config (e.g., `BuildConfig`).
+- API key is read from `BuildConfig.OPEN_WEATHER_API_KEY` injected from `local.properties`.
 - Time filtering uses device local time and week-of-year.

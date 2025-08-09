@@ -29,7 +29,7 @@ import me.vosaa.shouldiride.ui.theme.Surface
 import kotlin.math.roundToInt
 
 /**
- * Card summarizing a day's 07:00 forecast with bike score and key metrics.
+ * Card summarizing a day's forecast at a specific period with bike score and key metrics.
  */
 @Composable
 fun WeatherCard(forecast: WeatherForecast, modifier: Modifier = Modifier) {
@@ -64,7 +64,7 @@ fun WeatherCard(forecast: WeatherForecast, modifier: Modifier = Modifier) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "7:00",
+                            text = forecast.period.displayTime,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
