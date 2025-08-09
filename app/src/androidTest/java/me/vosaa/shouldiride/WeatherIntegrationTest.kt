@@ -13,6 +13,10 @@ import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
 
+/**
+ * Integration test that exercises the full DI graph and network call against
+ * OpenWeather to validate the repository flow and basic invariants.
+ */
 @HiltAndroidTest
 @UninstallModules(NetworkModule::class)
 class WeatherIntegrationTest {
@@ -27,6 +31,10 @@ class WeatherIntegrationTest {
         hiltRule.inject()
     }
 
+    /**
+     * Requests a forecast and validates that weekday morning items are returned
+     * with sensible score ranges and correct critical flags.
+     */
     @Test
     fun verifyCompleteWeatherForecastFlow() = runTest {
         // When: We request weather forecast

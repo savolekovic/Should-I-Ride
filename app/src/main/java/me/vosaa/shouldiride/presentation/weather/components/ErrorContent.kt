@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import me.vosaa.shouldiride.R
 import me.vosaa.shouldiride.ui.theme.BadWeatherColor
 
+/** Displays a prominent error card with icon and message. */
 @Composable
 fun ErrorContent(error: String) {
     Box(

@@ -19,6 +19,10 @@ import me.vosaa.shouldiride.presentation.weather.components.ErrorContent
 import me.vosaa.shouldiride.presentation.weather.components.LoadingIndicator
 import me.vosaa.shouldiride.presentation.weather.components.WeatherContent
 
+/**
+ * Top-level weather screen responsible for requesting location permissions and
+ * rendering loading, error, or content based on the [WeatherViewModel] state.
+ */
 @Composable
 fun WeatherScreen(
     viewModel: WeatherViewModel,
@@ -27,6 +31,7 @@ fun WeatherScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     
+    // Launcher that requests both fine and coarse location permissions in one flow
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -46,6 +51,7 @@ fun WeatherScreen(
         }
     }
 
+    // Request permissions on first composition
     LaunchedEffect(Unit) {
         launcher.launch(
             arrayOf(

@@ -14,13 +14,21 @@ import me.vosaa.shouldiride.domain.model.WeatherForecast
 import me.vosaa.shouldiride.domain.repository.WeatherRepository
 import javax.inject.Inject
 
-
+/**
+ * ViewModel that coordinates location permission/state and weather retrieval,
+ * exposing a single immutable UI state to the Compose layer.
+ */
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
     private val repository: WeatherRepository,
     private val locationService: LocationService
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(WeatherUiState())
+
+    /**
+     * Collectable UI state. Starts by checking location permissions and fetching
+     * data once subscribed.
+     */
     val uiState = _uiState
         .onStart { checkLocationAndFetchData() }
         .stateIn(
@@ -29,6 +37,10 @@ class WeatherViewModel @Inject constructor(
             WeatherUiState()
         )
 
+    /**
+     * Checks permission and device location state, then loads forecasts from the repository.
+     * Updates [_uiState] with loading, error, and success states accordingly.
+     */
     private fun checkLocationAndFetchData() {
         viewModelScope.launch {
             try {
@@ -73,11 +85,20 @@ class WeatherViewModel @Inject constructor(
         }
     }
 
+    /** Requests a refresh of weather data using the current location. */
     fun refreshWeatherData() {
         checkLocationAndFetchData()
     }
 }
 
+/**
+ * Immutable UI model rendered by the weather screen.
+ *
+ * @property isLoading Whether data is currently loading
+ * @property forecasts List of transformed forecasts ready for display
+ * @property error Optional error message for user feedback
+ * @property location Human-readable location/city name
+ */
 data class WeatherUiState(
     val isLoading: Boolean = true,
     val forecasts: List<WeatherForecast> = emptyList(),

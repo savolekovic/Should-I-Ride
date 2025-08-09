@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.vosaa.shouldiride.ui.theme.Primary
 
+/**
+ * Compact icon/value/label triple used inside a [WeatherCard].
+ */
 @Composable
 fun WeatherInfoItem(
     painter: Painter,

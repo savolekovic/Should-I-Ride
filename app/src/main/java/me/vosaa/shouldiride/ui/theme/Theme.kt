@@ -34,6 +34,9 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+/**
+ * App theme wrapper using Material 3 with optional dynamic color on Android 12+.
+ */
 @Composable
 fun BestBikeDayTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -58,6 +61,9 @@ fun BestBikeDayTheme(
     )
 }
 
+/**
+ * Maps a ride score and criticality flag to a color used by the UI.
+ */
 fun getBikeScoreColor(score: Int, hasCriticalConditions: Boolean): Color {
     return when {
         hasCriticalConditions -> BadWeatherColor // Red for critical conditions
