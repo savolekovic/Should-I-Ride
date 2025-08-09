@@ -13,9 +13,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import me.vosaa.shouldiride.presentation.weather.WeatherScreen
 import me.vosaa.shouldiride.ui.theme.BestBikeDayTheme
 
+/**
+ * Host activity that sets up the Compose content and injects the app's
+ * [WeatherViewModel] via Hilt for the single-screen experience.
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    /**
+     * Initializes edge-to-edge UI and renders the [WeatherScreen].
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

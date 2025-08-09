@@ -18,6 +18,13 @@ import androidx.compose.ui.unit.dp
 import me.vosaa.shouldiride.ui.theme.BadWeatherColor
 import me.vosaa.shouldiride.ui.theme.getBikeScoreColor
 
+/**
+ * Circular indicator that visualizes the ride score and warns when conditions
+ * are flagged as critical.
+ *
+ * @param score Ride score from 0 to 100
+ * @param hasCriticalConditions Whether any unsafe conditions are present
+ */
 @Composable
 fun BikeScoreIndicator(score: Int, hasCriticalConditions: Boolean) {
     Column(

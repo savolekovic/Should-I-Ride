@@ -13,10 +13,18 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
+/**
+ * Hilt module that wires up networking primitives (OkHttp, Retrofit) and
+ * provides the app's [WeatherRepository] implementation.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    /**
+     * Provides an [HttpLoggingInterceptor] configured at BODY level to aid
+     * debugging network requests in development.
+     */
     @Provides
     @Singleton
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
@@ -25,6 +33,9 @@ object NetworkModule {
         }
     }
 
+    /**
+     * Provides a configured [OkHttpClient] with logging for Retrofit.
+     */
     @Provides
     @Singleton
     fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
@@ -33,6 +44,9 @@ object NetworkModule {
             .build()
     }
 
+    /**
+     * Provides a [Retrofit] instance pointing to OpenWeather's base URL.
+     */
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
@@ -43,12 +57,19 @@ object NetworkModule {
             .build()
     }
 
+    /**
+     * Creates the Retrofit-backed [WeatherApiService].
+     */
     @Provides
     @Singleton
     fun provideWeatherApiService(retrofit: Retrofit): WeatherApiService {
         return retrofit.create(WeatherApiService::class.java)
     }
 
+    /**
+     * Binds the concrete [WeatherRepositoryImpl] to the domain [WeatherRepository]
+     * interface for DI.
+     */
     @Provides
     @Singleton
     fun provideWeatherRepository(

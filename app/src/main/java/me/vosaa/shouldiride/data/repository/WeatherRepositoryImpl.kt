@@ -10,17 +10,38 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
+/**
+ * Result of the bike-ride scoring algorithm containing a final score and a
+ * flag indicating if any critical (unsafe) condition is present.
+ */
 data class WeatherScoreResult(
     val score: Int,
     val hasCriticalConditions: Boolean
 )
 
+/**
+ * Concrete [WeatherRepository] that talks to OpenWeather and transforms raw
+ * forecast data into a domain-friendly model for the UI.
+ */
 class WeatherRepositoryImpl @Inject constructor(
     private val apiService: WeatherApiService,
 ) : WeatherRepository {
+    /** Day-of-week formatter used for card headers. */
     private val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+
+    /**
+     * OpenWeather API key.
+     * TODO: Clarify functionality and move to a secure source (BuildConfig, local.properties,
+     * or an injected config provider). Hardcoding keys is unsafe.
+     */
     private val apiKey = "63816ac463b32cf49aad527b75298a20"
 
+    /**
+     * Returns a pair of (cityName, weekdayMorningForecasts) for the current week.
+     *
+     * The list is filtered to include only workdays (Monday–Friday) at 07:00 and
+     * only for the current week, then mapped into domain [WeatherForecast] items.
+     */
     override suspend fun getWeatherForecast(lat: Double, lon: Double): Pair<String, List<WeatherForecast>> {
         return try {
             val response = apiService.getWeatherForecast(lat, lon, apiKey = apiKey)
@@ -28,6 +49,7 @@ class WeatherRepositoryImpl @Inject constructor(
             val currentWeek = currentTime.get(Calendar.WEEK_OF_YEAR)
 
             val list = response.list
+                // Keep only forecast entries at 07:00 local time for workdays in the current week
                 .filter { forecast ->
                     val forecastTime = Calendar.getInstance().apply {
                         timeInMillis = forecast.dt * 1000
@@ -65,6 +87,10 @@ class WeatherRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Computes a rideability score (0–100) for a single forecast item and flags
+     * critical conditions (rain probability very high, dangerous wind, or extreme temperatures).
+     */
     fun calculateRideRating(forecast: ForecastItem): WeatherScoreResult {
         // Rain probability scoring (0-40 points)
         val rainScore = when (forecast.pop) {

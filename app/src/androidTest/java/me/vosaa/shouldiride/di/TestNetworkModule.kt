@@ -11,6 +11,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
+/**
+ * Hilt test module that replaces the production [NetworkModule] in androidTests.
+ * Provides a minimal Retrofit stack suitable for integration tests.
+ */
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
@@ -18,6 +22,7 @@ import javax.inject.Singleton
 )
 object TestNetworkModule {
     
+    /** Provides a Retrofit instance for tests. */
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit {
@@ -27,12 +32,14 @@ object TestNetworkModule {
             .build()
     }
 
+    /** Provides the API service used by the repository in tests. */
     @Provides
     @Singleton
     fun provideWeatherApiService(retrofit: Retrofit): WeatherApiService {
         return retrofit.create(WeatherApiService::class.java)
     }
 
+    /** Binds the repository implementation for tests. */
     @Provides
     @Singleton
     fun provideWeatherRepository(

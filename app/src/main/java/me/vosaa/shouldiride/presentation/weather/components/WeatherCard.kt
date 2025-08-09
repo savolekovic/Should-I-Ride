@@ -28,6 +28,9 @@ import me.vosaa.shouldiride.ui.theme.BadWeatherColor
 import me.vosaa.shouldiride.ui.theme.Surface
 import kotlin.math.roundToInt
 
+/**
+ * Card summarizing a day's 07:00 forecast with bike score and key metrics.
+ */
 @Composable
 fun WeatherCard(forecast: WeatherForecast, modifier: Modifier = Modifier) {
     Card(
@@ -125,6 +128,9 @@ fun WeatherCard(forecast: WeatherForecast, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Returns a user-facing warning for the specific critical condition that applies.
+ */
 private fun getCriticalConditionMessage(forecast: WeatherForecast): String {
     return when {
         forecast.rainChance > 70 -> "Heavy Rain Expected"

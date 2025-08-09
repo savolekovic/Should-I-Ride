@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.vosaa.shouldiride.ui.theme.Primary
 
+/** Centered circular progress for loading states. */
 @Composable
 fun LoadingIndicator() {
     Box(

@@ -17,6 +17,11 @@ import org.junit.Test
 import org.mockito.kotlin.mock
 import kotlin.math.absoluteValue
 
+/**
+ * Unit tests for the ride score calculation logic inside [WeatherRepositoryImpl].
+ * Tests cover critical conditions, ideal conditions, and boundary ranges for
+ * temperature, wind, and rain factors.
+ */
 class WeatherRepositoryTest {
     private lateinit var repository: WeatherRepository
     private lateinit var mockApiService: WeatherApiService
@@ -27,6 +32,7 @@ class WeatherRepositoryTest {
         repository = WeatherRepositoryImpl(mockApiService)
     }
 
+    /** High rain probability should trigger critical conditions and cap score. */
     @Test
     fun whenRainProbabilityIsHigh_conditionsAreCritical() {
         val forecast = ForecastItem(
@@ -63,6 +69,7 @@ class WeatherRepositoryTest {
         assertTrue(result.score <= 30)
     }
 
+    /** Dangerous wind speeds should be flagged as critical and cap the score. */
     @Test
     fun whenWindSpeedIsDangerous_conditionsAreCritical() {
         val forecast = ForecastItem(
@@ -99,6 +106,7 @@ class WeatherRepositoryTest {
         assertTrue(result.score <= 30)
     }
 
+    /** Ideal weather should yield a high ride score without critical flags. */
     @Test
     fun whenConditionsAreIdeal_scoreIsHigh() {
         val forecast = ForecastItem(
@@ -135,6 +143,7 @@ class WeatherRepositoryTest {
         assertTrue(result.score >= 70)
     }
 
+    // Temperature ranges and criticality
     @Test
     fun verifyTemperatureBasedScoring() {
         // Test cases for different temperatures and their expected outcomes
@@ -146,17 +155,17 @@ class WeatherRepositoryTest {
         )
 
         val testCases = listOf(
-            TestCase(-10.0, 30, true, "Extremely cold"),     // Critical temperature
+            TestCase(-10.0, 30, true, "Extremely cold"),
             TestCase(
                 0.0,
                 70,
                 false,
                 "Cold"
-            ),               // Adjusted score based on implementation
-            TestCase(15.0, 85, false, "Comfortable"),       // Good temperature
-            TestCase(25.0, 85, false, "Ideal"),            // Perfect temperature
-            TestCase(35.0, 70, false, "Hot"),              // Adjusted for actual scoring
-            TestCase(42.0, 30, true, "Extremely hot")      // Critical temperature
+            ),
+            TestCase(15.0, 85, false, "Comfortable"),
+            TestCase(25.0, 85, false, "Ideal"),
+            TestCase(35.0, 70, false, "Hot"),
+            TestCase(42.0, 30, true, "Extremely hot")
         )
 
         testCases.forEach { testCase ->
@@ -207,6 +216,7 @@ class WeatherRepositoryTest {
         }
     }
 
+    // Wind speed behavior
     @Test
     fun verifyWindSpeedScoring() {
         data class WindTestCase(
@@ -270,6 +280,7 @@ class WeatherRepositoryTest {
         }
     }
 
+    // Rain probability behavior
     @Test
     fun verifyRainProbabilityScoring() {
         data class RainTestCase(
@@ -334,6 +345,7 @@ class WeatherRepositoryTest {
         }
     }
 
+    // Combined factors behavior
     @Test
     fun verifyCombinedConditionsScoring() {
         data class CombinedTestCase(

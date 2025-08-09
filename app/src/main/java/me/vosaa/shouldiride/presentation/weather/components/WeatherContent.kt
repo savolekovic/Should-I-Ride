@@ -16,6 +16,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import me.vosaa.shouldiride.domain.model.WeatherForecast
 
+/**
+ * Renders the screen title, location subtitle, and a lazy list of
+ * [WeatherCard]s representing each forecast.
+ */
 @Composable
 fun WeatherContent(
     forecasts: List<WeatherForecast>,
