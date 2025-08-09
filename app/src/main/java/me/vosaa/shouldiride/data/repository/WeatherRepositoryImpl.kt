@@ -1,7 +1,9 @@
 package me.vosaa.shouldiride.data.repository
 
+import me.vosaa.shouldiride.BuildConfig
 import me.vosaa.shouldiride.data.remote.WeatherApiService
 import me.vosaa.shouldiride.data.remote.model.ForecastItem
+import me.vosaa.shouldiride.domain.model.RidePeriod
 import me.vosaa.shouldiride.domain.model.WeatherForecast
 import me.vosaa.shouldiride.domain.repository.WeatherRepository
 import java.text.SimpleDateFormat
@@ -22,6 +24,9 @@ data class WeatherScoreResult(
 /**
  * Concrete [WeatherRepository] that talks to OpenWeather and transforms raw
  * forecast data into a domain-friendly model for the UI.
+ *
+ * This implementation also groups forecasts by time-of-day [RidePeriod] and
+ * computes a bike ride score per item.
  */
 class WeatherRepositoryImpl @Inject constructor(
     private val apiService: WeatherApiService,
@@ -30,58 +35,74 @@ class WeatherRepositoryImpl @Inject constructor(
     private val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
 
     /**
-     * OpenWeather API key.
-     * TODO: Clarify functionality and move to a secure source (BuildConfig, local.properties,
-     * or an injected config provider). Hardcoding keys is unsafe.
-     */
-    private val apiKey = "63816ac463b32cf49aad527b75298a20"
-
-    /**
-     * Returns a pair of (cityName, weekdayMorningForecasts) for the current week.
-     *
-     * The list is filtered to include only workdays (Monday–Friday) at 07:00 and
-     * only for the current week, then mapped into domain [WeatherForecast] items.
+     * Returns Morning forecasts for the current workweek to preserve
+     * backward-compatibility with older UI expectations.
      */
     override suspend fun getWeatherForecast(lat: Double, lon: Double): Pair<String, List<WeatherForecast>> {
+        val (city, periodMap) = getWeatherForecastsByPeriod(lat, lon, periods = listOf(RidePeriod.MORNING))
+        val mornings = periodMap[RidePeriod.MORNING].orEmpty()
+        return Pair(city, mornings)
+    }
+
+    /**
+     * Fetches forecast data and returns items grouped by the requested [periods].
+     *
+     * Only weekdays in the current week are returned and only entries matching
+     * the representative hour for each [RidePeriod] are considered.
+     */
+    override suspend fun getWeatherForecastsByPeriod(
+        lat: Double,
+        lon: Double,
+        periods: List<RidePeriod>
+    ): Pair<String, Map<RidePeriod, List<WeatherForecast>>> {
         return try {
-            val response = apiService.getWeatherForecast(lat, lon, apiKey = apiKey)
+            val response = apiService.getWeatherForecast(lat, lon, apiKey = BuildConfig.OPEN_WEATHER_API_KEY)
             val currentTime = Calendar.getInstance()
             val currentWeek = currentTime.get(Calendar.WEEK_OF_YEAR)
 
-            val list = response.list
-                // Keep only forecast entries at 07:00 local time for workdays in the current week
+            val periodHours = periods.map { it.hourOfDay }.toSet()
+
+            val grouped = response.list
                 .filter { forecast ->
-                    val forecastTime = Calendar.getInstance().apply {
-                        timeInMillis = forecast.dt * 1000
-                    }
-
-                    forecastTime.get(Calendar.HOUR_OF_DAY) == 7 &&
-                            (forecastTime.get(Calendar.DAY_OF_YEAR) >= currentTime.get(Calendar.DAY_OF_YEAR)) &&
-                            forecastTime.get(Calendar.DAY_OF_WEEK) in Calendar.MONDAY..Calendar.FRIDAY &&
-                            forecastTime.get(Calendar.WEEK_OF_YEAR) == currentWeek
+                    val forecastTime = Calendar.getInstance().apply { timeInMillis = forecast.dt * 1000 }
+                    val hour = forecastTime.get(Calendar.HOUR_OF_DAY)
+                    hour in periodHours &&
+                        (forecastTime.get(Calendar.DAY_OF_YEAR) >= currentTime.get(Calendar.DAY_OF_YEAR)) &&
+                        forecastTime.get(Calendar.DAY_OF_WEEK) in Calendar.MONDAY..Calendar.FRIDAY &&
+                        forecastTime.get(Calendar.WEEK_OF_YEAR) == currentWeek
                 }
-                .take(5)
-                .map { forecast ->
-                    val forecastDate = Calendar.getInstance().apply {
-                        timeInMillis = forecast.dt * 1000
-                    }
-                    val isToday =
-                        forecastDate.get(Calendar.DAY_OF_YEAR) == currentTime.get(Calendar.DAY_OF_YEAR) &&
-                                forecastDate.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR)
-
-                    val weatherScore = calculateRideRating(forecast)
-                    
-                    WeatherForecast(
-                        date = if (isToday) "Today" else dayFormat.format(Date(forecast.dt * 1000)),
-                        temperature = forecast.main.temp.toInt(),
-                        conditions = forecast.weather.firstOrNull()?.description ?: "",
-                        windSpeed = forecast.wind.speed,
-                        rainChance = (forecast.pop * 100).toInt(),
-                        bikeScore = weatherScore.score,
-                        hasCriticalConditions = weatherScore.hasCriticalConditions
-                    )
+                .groupBy { forecast ->
+                    val cal = Calendar.getInstance().apply { timeInMillis = forecast.dt * 1000 }
+                    val hour = cal.get(Calendar.HOUR_OF_DAY)
+                    RidePeriod.fromHour(hour)
                 }
-            Pair(response.city.name, list)
+                .filterKeys { it != null }
+                .mapKeys { it.key!! }
+                .mapValues { (_, list) ->
+                    list.sortedBy { it.dt }.take(5).map { forecast ->
+                        val forecastDate = Calendar.getInstance().apply { timeInMillis = forecast.dt * 1000 }
+                        val isToday =
+                            forecastDate.get(Calendar.DAY_OF_YEAR) == currentTime.get(Calendar.DAY_OF_YEAR) &&
+                                    forecastDate.get(Calendar.YEAR) == currentTime.get(Calendar.YEAR)
+
+                        val weatherScore = calculateRideRating(forecast)
+                        val period = RidePeriod.fromHour(forecastDate.get(Calendar.HOUR_OF_DAY)) ?: RidePeriod.MORNING
+
+                        WeatherForecast(
+                            date = if (isToday) "Today" else dayFormat.format(Date(forecast.dt * 1000)),
+                            temperature = forecast.main.temp.toInt(),
+                            conditions = forecast.weather.firstOrNull()?.description ?: "",
+                            windSpeed = forecast.wind.speed,
+                            rainChance = (forecast.pop * 100).toInt(),
+                            bikeScore = weatherScore.score,
+                            hasCriticalConditions = weatherScore.hasCriticalConditions,
+                            period = period,
+                            timestamp = forecast.dt * 1000
+                        )
+                    }
+                }
+
+            Pair(response.city.name, grouped)
         } catch (e: Exception) {
             throw e
         }
@@ -98,7 +119,7 @@ class WeatherRepositoryImpl @Inject constructor(
             in 0.15..0.30 -> 30
             in 0.30..0.45 -> 20
             in 0.45..0.60 -> 10
-            else -> 0             
+            else -> 0
         }
 
         // Wind speed scoring (0-35 points)
@@ -108,7 +129,7 @@ class WeatherRepositoryImpl @Inject constructor(
             in 6.0..9.0 -> 20
             in 9.0..12.0 -> 10
             in 12.0..15.0 -> 5
-            else -> 0             
+            else -> 0
         }
 
         // Temperature scoring (0-25 points)

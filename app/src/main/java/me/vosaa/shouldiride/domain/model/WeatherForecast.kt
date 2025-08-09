@@ -10,6 +10,8 @@ package me.vosaa.shouldiride.domain.model
  * @property rainChance Probability of precipitation as percentage [0,100]
  * @property bikeScore Computed rideability score [0,100]
  * @property hasCriticalConditions Whether conditions are unsafe to ride
+ * @property period The ride period this forecast represents
+ * @property timestamp Unix time in milliseconds for this forecast slot
  */
 data class WeatherForecast(
     val date: String,
@@ -18,5 +20,7 @@ data class WeatherForecast(
     val windSpeed: Double,
     val rainChance: Int,
     val bikeScore: Int,
-    val hasCriticalConditions: Boolean
+    val hasCriticalConditions: Boolean,
+    val period: RidePeriod,
+    val timestamp: Long
 ) 

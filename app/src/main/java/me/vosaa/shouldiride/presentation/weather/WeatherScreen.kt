@@ -75,6 +75,9 @@ fun WeatherScreen(
                 else -> WeatherContent(
                     forecasts = uiState.forecasts,
                     location = uiState.location,
+                    periods = uiState.forecastsByPeriod.keys.sortedBy { it.ordinal },
+                    selected = uiState.selectedPeriod,
+                    onSelectPeriod = viewModel::selectPeriod,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
