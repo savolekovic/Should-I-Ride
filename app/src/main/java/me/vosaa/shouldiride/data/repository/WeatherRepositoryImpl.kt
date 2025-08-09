@@ -39,9 +39,8 @@ class WeatherRepositoryImpl @Inject constructor(
      * backward-compatibility with older UI expectations.
      */
     override suspend fun getWeatherForecast(lat: Double, lon: Double): Pair<String, List<WeatherForecast>> {
-        val (_, periodMap) = getWeatherForecastsByPeriod(lat, lon, periods = listOf(RidePeriod.MORNING))
+        val (city, periodMap) = getWeatherForecastsByPeriod(lat, lon, periods = listOf(RidePeriod.MORNING))
         val mornings = periodMap[RidePeriod.MORNING].orEmpty()
-        val city = apiService.getWeatherForecast(lat, lon, apiKey = BuildConfig.OPEN_WEATHER_API_KEY).city.name
         return Pair(city, mornings)
     }
 
